@@ -783,6 +783,7 @@ namespace Neo.VM
         /// Remove all the items from the compound-type.
         /// </summary>
         CLEARITEMS = 0xD3,
+        POPITEM = 0xD4,
 
         #endregion
 

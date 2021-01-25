@@ -45,6 +45,8 @@ namespace Neo.VM
         public EvaluationStack ResultStack { get; }
         public StackItem UncaughtException { get; private set; }
 
+        public static bool LoggingOn { get; } = false;
+
         public VMState State
         {
             get
@@ -134,9 +136,14 @@ namespace Neo.VM
             return State;
         }
 
+
         private void ExecuteInstruction(Instruction instruction)
         {
             ExecutionContext context = CurrentContext;
+            if (LoggingOn)
+            {
+                Console.WriteLine($"Stack count before executing: {CurrentContext.EvaluationStack.Count.ToString()} {instruction.OpCode.ToString()}");
+            }
             switch (instruction.OpCode)
             {
                 //Push
@@ -1138,6 +1145,14 @@ namespace Neo.VM
                         VMArray array = Pop<VMArray>();
                         if (newItem is Struct s) newItem = s.Clone();
                         array.Add(newItem);
+                        break;
+                    }
+                case OpCode.POPITEM:
+                    {
+                        VMArray x = Pop<VMArray>();
+                        int index = x.Count - 1;
+                        Push(x[index]);
+                        x.RemoveAt(index);
                         break;
                     }
                 case OpCode.SETITEM:
