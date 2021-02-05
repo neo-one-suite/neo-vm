@@ -28,8 +28,10 @@ namespace Neo.VM
 
         internal void CopyTo(EvaluationStack stack, int count = -1)
         {
+            if (count < -1 || count > innerList.Count)
+                throw new ArgumentOutOfRangeException(nameof(count));
             if (count == 0) return;
-            if (count == -1)
+            if (count == -1 || count == innerList.Count)
                 stack.innerList.AddRange(innerList);
             else
                 stack.innerList.AddRange(innerList.Skip(innerList.Count - count));
@@ -48,19 +50,29 @@ namespace Neo.VM
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Insert(int index, StackItem item)
         {
-            if (index > innerList.Count) throw new InvalidOperationException();
+            if (index > innerList.Count) throw new InvalidOperationException($"Insert out of bounds: {index}/{innerList.Count}");
             innerList.Insert(innerList.Count - index, item);
             referenceCounter.AddStackReference(item);
+        }
+
+        internal void MoveTo(EvaluationStack stack, int count = -1)
+        {
+            if (count == 0) return;
+            CopyTo(stack, count);
+            if (count == -1 || count == innerList.Count)
+                innerList.Clear();
+            else
+                innerList.RemoveRange(innerList.Count - count, count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StackItem Peek(int index = 0)
         {
-            if (index >= innerList.Count) throw new InvalidOperationException();
+            if (index >= innerList.Count) throw new InvalidOperationException($"Peek out of bounds: {index}/{innerList.Count}");
             if (index < 0)
             {
                 index += innerList.Count;
-                if (index < 0) throw new InvalidOperationException();
+                if (index < 0) throw new InvalidOperationException($"Peek out of bounds: {index}/{innerList.Count}");
             }
             return innerList[innerList.Count - index - 1];
         }
@@ -106,7 +118,7 @@ namespace Neo.VM
                     throw new ArgumentOutOfRangeException(nameof(index));
             }
             index = innerList.Count - index - 1;
-            if (!(innerList[index] is T item))
+            if (innerList[index] is not T item)
                 throw new InvalidCastException($"The item can't be casted to type {typeof(T)}");
             innerList.RemoveAt(index);
             referenceCounter.RemoveStackReference(item);

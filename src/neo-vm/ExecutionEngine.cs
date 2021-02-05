@@ -299,6 +299,11 @@ namespace Neo.VM
                         ExecuteCall(x.Position);
                         break;
                     }
+                case OpCode.CALLT:
+                    {
+                        LoadToken(instruction.TokenU16);
+                        break;
+                    }
                 case OpCode.ABORT:
                     {
                         throw new Exception($"{OpCode.ABORT} is executed.");
@@ -361,7 +366,11 @@ namespace Neo.VM
                         ExecutionContext context_pop = InvocationStack.Pop();
                         EvaluationStack stack_eval = InvocationStack.Count == 0 ? ResultStack : InvocationStack.Peek().EvaluationStack;
                         if (context_pop.EvaluationStack != stack_eval)
+                        {
+                            if (context_pop.RVCount >= 0 && context_pop.EvaluationStack.Count != context_pop.RVCount)
+                                throw new InvalidOperationException("RVCount doesn't match with EvaluationStack");
                             context_pop.EvaluationStack.CopyTo(stack_eval);
+                        }
                         if (InvocationStack.Count == 0)
                             State = VMState.HALT;
                         ContextUnloaded(context_pop);
@@ -1037,19 +1046,13 @@ namespace Neo.VM
                     }
                 case OpCode.VALUES:
                     {
-                        IEnumerable<StackItem> values;
                         var x = Pop();
-                        switch (x)
+                        IEnumerable<StackItem> values = x switch
                         {
-                            case VMArray array:
-                                values = array;
-                                break;
-                            case Map map:
-                                values = map.Values;
-                                break;
-                            default:
-                                throw new InvalidOperationException($"Invalid type for {instruction.OpCode}: {x.Type}");
-                        }
+                            VMArray array => array,
+                            Map map => map.Values,
+                            _ => throw new InvalidOperationException($"Invalid type for {instruction.OpCode}: {x.Type}"),
+                        };
                         VMArray newArray = new VMArray(ReferenceCounter);
                         foreach (StackItem item in values)
                             if (item is Struct s)
@@ -1136,7 +1139,7 @@ namespace Neo.VM
                                     int index = key.ToInt32();
                                     if (index < 0 || index >= buffer.Size)
                                         throw new InvalidOperationException($"The value {index} is out of range.");
-                                    if (!(value is PrimitiveType p))
+                                    if (value is not PrimitiveType p)
                                         throw new InvalidOperationException($"Value must be a primitive type in {instruction.OpCode}");
                                     int b = p.ToInt32();
                                     if (b < sbyte.MinValue || b > byte.MaxValue)
@@ -1189,6 +1192,14 @@ namespace Neo.VM
                     {
                         CompoundType x = Pop<CompoundType>();
                         x.Clear();
+                        break;
+                    }
+                case OpCode.POPITEM:
+                    {
+                        VMArray x = Pop<VMArray>();
+                        int index = x.Count - 1;
+                        Push(x[index]);
+                        x.RemoveAt(index);
                         break;
                     }
 
@@ -1364,26 +1375,31 @@ namespace Neo.VM
         protected virtual void LoadContext(ExecutionContext context)
         {
             if (InvocationStack.Count >= Limits.MaxInvocationStackSize)
-                throw new InvalidOperationException();
+                throw new InvalidOperationException($"MaxInvocationStackSize exceed: {InvocationStack.Count}");
             InvocationStack.Push(context);
             if (EntryContext is null) EntryContext = context;
             CurrentContext = context;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected ExecutionContext CreateContext(Script script, int initialPosition = 0)
+        protected ExecutionContext CreateContext(Script script, int rvcount, int initialPosition)
         {
-            return new ExecutionContext(script, ReferenceCounter)
+            return new ExecutionContext(script, rvcount, ReferenceCounter)
             {
                 InstructionPointer = initialPosition
             };
         }
 
-        public ExecutionContext LoadScript(Script script, int initialPosition = 0)
+        public ExecutionContext LoadScript(Script script, int rvcount = -1, int initialPosition = 0)
         {
-            ExecutionContext context = CreateContext(script, initialPosition);
+            ExecutionContext context = CreateContext(script, rvcount, initialPosition);
             LoadContext(context);
             return context;
+        }
+
+        protected virtual ExecutionContext LoadToken(ushort token)
+        {
+            throw new InvalidOperationException($"Token not found: {token}");
         }
 
         protected virtual void OnFault(Exception e)

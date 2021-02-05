@@ -134,12 +134,12 @@ namespace Neo.VM
 
         private Instruction(OpCode opcode)
         {
-            OpCode = opcode;
+            this.OpCode = opcode;
+            if (!Enum.IsDefined(opcode)) throw new BadScriptException();
         }
 
-        internal Instruction(byte[] script, int ip)
+        internal Instruction(byte[] script, int ip) : this((OpCode)script[ip++])
         {
-            OpCode = (OpCode)script[ip++];
             int operandSizePrefix = OperandSizePrefixTable[(int)OpCode];
             int operandSize = 0;
             switch (operandSizePrefix)
@@ -161,7 +161,7 @@ namespace Neo.VM
             {
                 ip += operandSizePrefix;
                 if (ip + operandSize > script.Length)
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException($"Instrucion out of bounds. InstructionPointer: {ip}, operandSize: {operandSize}, length: {script.Length}");
                 Operand = new ReadOnlyMemory<byte>(script, ip, operandSize);
             }
         }

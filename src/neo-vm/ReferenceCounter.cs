@@ -21,7 +21,7 @@ namespace Neo.VM
         internal void AddReference(StackItem referred, CompoundType parent)
         {
             references_count++;
-            if (!(referred is CompoundType compound)) return;
+            if (referred is not CompoundType compound) return;
             if (!counter.TryGetValue(compound, out Entry tracing))
             {
                 tracing = new Entry();
@@ -43,10 +43,15 @@ namespace Neo.VM
             tracing.ObjectReferences[parent] = count;
         }
 
+        internal void AddReferences(int count)
+        {
+            references_count += count;
+        }
+
         internal void AddStackReference(StackItem referred)
         {
             references_count++;
-            if (!(referred is CompoundType compound)) return;
+            if (referred is not CompoundType compound) return;
             if (counter.TryGetValue(compound, out Entry entry))
                 entry.StackReferences++;
             else
@@ -108,7 +113,7 @@ namespace Neo.VM
         internal void RemoveReference(StackItem referred, CompoundType parent)
         {
             references_count--;
-            if (!(referred is CompoundType compound)) return;
+            if (referred is not CompoundType compound) return;
             Entry entry = counter[compound];
             entry.ObjectReferences[parent] -= 1;
             if (entry.StackReferences == 0)
@@ -118,7 +123,7 @@ namespace Neo.VM
         internal void RemoveStackReference(StackItem referred)
         {
             references_count--;
-            if (!(referred is CompoundType item_compound)) return;
+            if (referred is not CompoundType item_compound) return;
             if (--counter[item_compound].StackReferences == 0)
                 zero_referred.Add(item_compound);
         }

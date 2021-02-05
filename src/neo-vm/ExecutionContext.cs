@@ -12,6 +12,11 @@ namespace Neo.VM
         private int instructionPointer;
 
         /// <summary>
+        /// Number of items to be returned
+        /// </summary>
+        public int RVCount { get; }
+
+        /// <summary>
         /// Script
         /// </summary>
         public Script Script => shared_states.Script;
@@ -76,14 +81,17 @@ namespace Neo.VM
         /// </summary>
         /// <param name="script">Script</param>
         /// <param name="rvcount">Number of items to be returned</param>
-        internal ExecutionContext(Script script, ReferenceCounter referenceCounter)
-            : this(new SharedStates(script, referenceCounter), 0)
+        internal ExecutionContext(Script script, int rvcount, ReferenceCounter referenceCounter)
+            : this(new SharedStates(script, referenceCounter), rvcount, 0)
         {
         }
 
-        private ExecutionContext(SharedStates shared_states, int initialPosition)
+        private ExecutionContext(SharedStates shared_states, int rvcount, int initialPosition)
         {
+            if (rvcount < -1 || rvcount > ushort.MaxValue)
+                throw new ArgumentOutOfRangeException(nameof(rvcount));
             this.shared_states = shared_states;
+            this.RVCount = rvcount;
             this.InstructionPointer = initialPosition;
         }
 
@@ -94,7 +102,7 @@ namespace Neo.VM
 
         public ExecutionContext Clone(int initialPosition)
         {
-            return new ExecutionContext(shared_states, initialPosition);
+            return new ExecutionContext(shared_states, 0, initialPosition);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
