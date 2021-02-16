@@ -1,7 +1,6 @@
 ﻿using Neo.VM.Types;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Text;
 using Array = Neo.VM.Types.Array;
@@ -13,9 +12,19 @@ namespace Neo.VM
     {
         public abstract bool Equals(StackItem other);
 
-        public static StackItem FromInterface(IInteropInterface value)
+        public sealed override bool Equals(object obj)
         {
-            return new InteropInterface(value);
+            if (obj == null) return false;
+            if (obj == this) return true;
+            if (obj is StackItem other)
+                return Equals(other);
+            return false;
+        }
+
+        public static StackItem FromInterface<T>(T value)
+            where T : class
+        {
+            return new InteropInterface<T>(value);
         }
 
         public virtual BigInteger GetBigInteger()
@@ -23,12 +32,25 @@ namespace Neo.VM
             return new BigInteger(GetByteArray());
         }
 
-        public virtual bool GetBoolean()
-        {
-            return GetByteArray().Any(p => p != 0);
-        }
+        public abstract bool GetBoolean();
 
         public abstract byte[] GetByteArray();
+
+        public virtual int GetByteLength()
+        {
+            return GetByteArray().Length;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                foreach (byte element in GetByteArray())
+                    hash = hash * 31 + element;
+                return hash;
+            }
+        }
 
         public virtual string GetString()
         {
@@ -68,6 +90,11 @@ namespace Neo.VM
         public static implicit operator StackItem(byte[] value)
         {
             return new ByteArray(value);
+        }
+
+        public static implicit operator StackItem(string value)
+        {
+            return new ByteArray(Encoding.UTF8.GetBytes(value));
         }
 
         public static implicit operator StackItem(StackItem[] value)
