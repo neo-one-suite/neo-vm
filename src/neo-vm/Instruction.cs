@@ -181,7 +181,7 @@ namespace Neo.VM
         private Instruction(OpCode opcode)
         {
             this.OpCode = opcode;
-            if (!Enum.IsDefined(opcode)) throw new BadScriptException();
+            if (!Enum.IsDefined(typeof(OpCode), opcode)) throw new BadScriptException();
         }
 
         internal Instruction(byte[] script, int ip) : this((OpCode)script[ip++])

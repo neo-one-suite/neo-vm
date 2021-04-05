@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using InternalComparer = Neo.VM.Collections.ReferenceEqualityComparer;
 
 namespace Neo.VM.Types
 {
@@ -55,7 +56,7 @@ namespace Neo.VM.Types
         /// <returns>The copied object.</returns>
         public StackItem DeepCopy()
         {
-            return DeepCopy(new Dictionary<StackItem, StackItem>(ReferenceEqualityComparer.Instance));
+            return DeepCopy(new Dictionary<StackItem, StackItem>(InternalComparer.Instance));
         }
 
         internal virtual StackItem DeepCopy(Dictionary<StackItem, StackItem> refMap)

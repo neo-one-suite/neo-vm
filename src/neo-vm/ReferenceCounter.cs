@@ -1,4 +1,5 @@
 using Neo.VM.Types;
+using InternalComparer = Neo.VM.Collections.ReferenceEqualityComparer;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,8 +16,8 @@ namespace Neo.VM
             public Dictionary<CompoundType, int> ObjectReferences;
         }
 
-        private readonly Dictionary<CompoundType, Entry> counter = new Dictionary<CompoundType, Entry>(ReferenceEqualityComparer.Instance);
-        private readonly HashSet<CompoundType> zero_referred = new HashSet<CompoundType>(ReferenceEqualityComparer.Instance);
+        private readonly Dictionary<CompoundType, Entry> counter = new Dictionary<CompoundType, Entry>(InternalComparer.Instance);
+        private readonly HashSet<CompoundType> zero_referred = new HashSet<CompoundType>(InternalComparer.Instance);
         private int references_count = 0;
 
         /// <summary>
@@ -36,7 +37,7 @@ namespace Neo.VM
             int count;
             if (tracing.ObjectReferences is null)
             {
-                tracing.ObjectReferences = new Dictionary<CompoundType, int>(ReferenceEqualityComparer.Instance);
+                tracing.ObjectReferences = new Dictionary<CompoundType, int>(InternalComparer.Instance);
                 count = 1;
             }
             else
@@ -74,10 +75,10 @@ namespace Neo.VM
         {
             while (zero_referred.Count > 0)
             {
-                HashSet<CompoundType> toBeDestroyed = new HashSet<CompoundType>(ReferenceEqualityComparer.Instance);
+                HashSet<CompoundType> toBeDestroyed = new HashSet<CompoundType>(InternalComparer.Instance);
                 foreach (CompoundType compound in zero_referred)
                 {
-                    HashSet<CompoundType> toBeDestroyedInLoop = new HashSet<CompoundType>(ReferenceEqualityComparer.Instance);
+                    HashSet<CompoundType> toBeDestroyedInLoop = new HashSet<CompoundType>(InternalComparer.Instance);
                     Queue<CompoundType> toBeChecked = new Queue<CompoundType>();
                     toBeChecked.Enqueue(compound);
                     while (toBeChecked.Count > 0)

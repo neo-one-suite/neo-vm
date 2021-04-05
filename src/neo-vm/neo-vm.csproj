@@ -3,18 +3,19 @@
   <PropertyGroup>
     <Copyright>2016-2021 The Neo Project</Copyright>
     <AssemblyTitle>Neo.VM</AssemblyTitle>
-    <Description>Neo.VM</Description>
+    <Description>Neo.VM - NEO•ONE Fork</Description>
     <VersionPrefix>3.0.0</VersionPrefix>
     <VersionSuffix>rc1</VersionSuffix>
     <Authors>The Neo Project</Authors>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <LangVersion>9.0</LangVersion>
     <AssemblyName>Neo.VM</AssemblyName>
-    <PackageId>Neo.VM</PackageId>
+    <PackageId>Neo-VM-N1-Fork</PackageId>
     <PackageTags>NEO;AntShares;Blockchain;Smart Contract;VM</PackageTags>
-    <PackageProjectUrl>https://github.com/neo-project/neo-vm</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/neo-one-suite/neo-vm.git</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/neo-project/neo-vm.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/neo-one-suite/neo-vm.git</RepositoryUrl>
     <RootNamespace>Neo.VM</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

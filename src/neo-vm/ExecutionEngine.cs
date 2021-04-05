@@ -141,6 +141,7 @@ namespace Neo.VM
         private void ExecuteInstruction()
         {
             Instruction instruction = CurrentContext.CurrentInstruction;
+            Console.WriteLine($"{instruction.OpCode.ToString()}");
             switch (instruction.OpCode)
             {
                 //Push
@@ -1370,6 +1371,7 @@ namespace Neo.VM
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine(e.ToString());
                     OnFault(e);
                 }
             }
@@ -1508,6 +1510,7 @@ namespace Neo.VM
         /// <param name="ex">The exception that caused the <see cref="VMState.FAULT"/> state.</param>
         protected virtual void OnFault(Exception ex)
         {
+            Console.WriteLine(ex.ToString());
             State = VMState.FAULT;
         }
 
